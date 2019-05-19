@@ -2,7 +2,7 @@
 It this repository has content about Socket initially, and after will have RMI content.
 #### IDE: Netbeans 8.2
 #### Language: Java
-# Tabalho_01:
+# Tabalho_01  (SOCKET):
 #### Q1: 
 This question was required to download codes TCP and UDP, client and Server, so after compile to test connection between client and server.
 #### Q2: 
@@ -15,8 +15,9 @@ This question requires make chat blocked between two clients and server doing th
 This question requires make chat no-blocked, over question 4.
 #### Q6: 
 This question requires to implements una funcion additional over question 5. 
-# Trabalho_02:
+# Trabalho_02 (SOCKET):
 #### Q1: 
 This question requires make the calculator in server side, but this time, it required do this modulate, like description pdf.
 #### Q2: 
 This question just require more modulation over question 1.
+# Trabalho_03   (RMI):
