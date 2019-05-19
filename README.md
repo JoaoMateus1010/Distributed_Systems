@@ -23,5 +23,5 @@ This question requires make the calculator in server side, but this time, it req
 #### Q2: 
 This question just require more modulation over question 1.
 # Trabalho_03   (RMI):
-##### IDE: Netbeans 8.2
+##### IDE: IntelliJ IDEA-2019-Free.Version
 ##### Language: Java
