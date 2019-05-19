@@ -25,3 +25,12 @@ This question just require more modulation over question 1.
 # Trabalho_03   (RMI):
 ##### IDE: IntelliJ IDEA-2019-Free.Version
 ##### Language: Java
+this workhome was requested an implementation of some service using RMI like middleware.
+I did a file transmisser between server and client, once taht client can list your files, can list server files, can take an file from server, and last, can exit program.
+
+Makefile documentation:
+make: compiler all files .java
+make clean: delete all files .class
+make rmi: start rmiregistry
+make server: start server
+make client: start client
