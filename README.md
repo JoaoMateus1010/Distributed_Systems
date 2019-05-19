@@ -28,7 +28,7 @@ This question just require more modulation over question 1.
 this workhome was requested an implementation of some service using RMI like middleware.
 I did a file transmisser between server and client, once taht client can list your files, can list server files, can take an file from server, and last, can exit program.
 
-Makefile documentation:
+Makefile documentation:\n
 make: compiler all files .java
 make clean: delete all files .class
 make rmi: start rmiregistry
