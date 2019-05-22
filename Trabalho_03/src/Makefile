@@ -1,7 +1,9 @@
 all:
 	javac *.java
 
-clean:
+cfiles: FILES_CLIENT/*
+	rm -R FILES_CLIENT/*
+clean:	
 	rm *.class
 
 rmi:
