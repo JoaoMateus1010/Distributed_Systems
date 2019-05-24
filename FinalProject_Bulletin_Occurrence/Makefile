@@ -1,0 +1,23 @@
+SRC=src
+BIN=bin
+CLIENTFOLDER=client
+SERVERFOLDER=server
+FILEMAINCLIENT=MainClient
+FILEMAINSERVER=MainServer
+BACKUPFOLDER=FinalProject_Bulletin_Occurrence
+
+all: $(CLIENTFOLDER)/$(SRC)/$(FILEMAINCLIENT).java $(SERVERFOLDER)/$(SRC)/$(FILEMAINSERVER).py
+	javac -d $(BIN)/$(CLIENTFOLDER) $(CLIENTFOLDER)/$(SRC)/*.java	
+
+clean: $(SERVERFOLDER)/$(SRC)/$(FILEMAINSERVER).py	$(BIN)/$(CLIENTFOLDER)/*.class	
+	rm $(BIN)/$(CLIENTFOLDER)/*.class	
+	rm -R $(BIN)
+
+client: $(BIN)/$(CLIENTFOLDER)/*.class
+	java -classpath $(BIN)/$(CLIENTFOLDER)/ $(FILEMAINCLIENT)	
+
+server: $(SERVERFOLDER)/$(SRC)/$(FILEMAINSERVER).py
+		python3 $(SERVERFOLDER)/$(SRC)/$(FILEMAINSERVER).py
+update_backup:	
+	cp -R $(CLIENTFOLDER)/$(SRC)/*.java $(BACKUPFOLDER)/$(CLIENTFOLDER)/$(SRC)
+	cp -R $(SERVERFOLDER)/$(SRC)/*.py $(BACKUPFOLDER)/$(SERVERFOLDER)/$(SRC)		
