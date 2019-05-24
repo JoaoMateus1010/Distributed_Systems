@@ -31,6 +31,7 @@ I did a file transmisser between server and client, once taht client can list yo
 ##### Makefile documentation:
 ###### make: compiler all files .java
 ###### make clean: delete all files .class
+###### make cfiles: delete all client files
 ###### make rmi: start rmiregistry
 ###### make server: start server
 ###### make client: start client
