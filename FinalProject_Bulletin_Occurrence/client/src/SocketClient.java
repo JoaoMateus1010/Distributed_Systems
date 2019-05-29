@@ -1,36 +1,65 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class SocketClient {
-    private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
-    private InetAddress Inet;
+    protected Socket socket;
+    protected DataInputStream in;
+    protected DataOutputStream out;
+    protected InetAddress Inet;
 
-    public SocketClient(Socket socket, DataInputStream in, DataOutputStream out, InetAddress inet) {
-        this.socket = socket;
-        this.in = in;
-        this.out = out;
-        this.Inet = inet;
-    }
+    private String IP;
+    private int ServerPort;
+    private int ClientPort;
 
-    public SocketClient(String IPClient,int PortClient,int PortServer){
+    public SocketClient(String IP,int PortServer,int PortClient) {
         try {
-            InetAddress inet = InetAddress.getByName(IPClient);
-            Socket sc = new Socket(inet,PortServer,inet,PortClient);
-            DataInputStream tempIn = new DataInputStream(sc.getInputStream());
-            DataOutputStream tempOut = new DataOutputStream(sc.getOutputStream());
-            SocketClient init = new SocketClient(sc,tempIn,tempOut,inet);
+            InetAddress inetC = InetAddress.getByName(IP);
+            Socket scC = new Socket(inetC,PortServer,inetC,PortClient);
+            DataOutputStream outC = new DataOutputStream(scC.getOutputStream());
+            DataInputStream inC = new DataInputStream(scC.getInputStream());
+            this.socket = scC;
+            this.in = inC;
+            this.out = outC;
+            this.Inet=inetC;
+            this.IP=IP;
+            this.ServerPort=PortServer;
+            this.ClientPort=PortClient;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
+    public int getServerPort() {
+        return ServerPort;
+    }
+
+    public void setServerPort(int serverPort) {
+        ServerPort = serverPort;
+    }
+
+    public int getClientPort() {
+        return ClientPort;
+    }
+
+    public void setClientPort(int clientPort) {
+        ClientPort = clientPort;
+    }
+
     public Socket getSocket() {
         return socket;
     }
@@ -63,6 +92,41 @@ public class SocketClient {
         Inet = inet;
     }
 
+    public void send(String msg){
+        try {
+            if(this.getOut()==null){
+                System.out.println("NULO");
+            }
+            this.getOut().writeUTF(msg);
+        } catch (IOException e) {
+            System.out.println("AQUI");
+            e.printStackTrace();
+            closeAll();
+            System.exit(0);
+        }
+        //System.out.println(msg);
+    }
+
+    public String request(){
+        String msg = null;
+        try {
+            msg=this.getIn().readUTF();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return msg;
+
+    }
+
+    public void closeAll(){
+        try {
+            this.getSocket().close();
+            this.getIn().close();
+            this.getOut().close();
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
     @Override
     public String toString() {
         return "SocketClient{" +
