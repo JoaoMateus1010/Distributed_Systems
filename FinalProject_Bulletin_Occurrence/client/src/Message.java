@@ -1,3 +1,5 @@
+import org.json.JSONObject;
+
 import java.util.Arrays;
 
 public class Message {
@@ -5,19 +7,16 @@ public class Message {
     private int requestId;
     private String MethodReference;
     private int MethodId;
-    private byte[] arguments;
+    private String arguments;
     private OccurrenceBoletin boletin;
 
-    public Message(int messageType, int requestId, String methodReference, int methodId, byte[] arguments, OccurrenceBoletin boletin) {
+    public Message(int messageType, int requestId, String methodReference, int methodId, String arguments, OccurrenceBoletin boletin) {
         MessageType = messageType;
         this.requestId = requestId;
         MethodReference = methodReference;
         MethodId = methodId;
         this.arguments = arguments;
         this.boletin = boletin;
-    }
-
-    public Message() {
     }
 
     public int getMessageType() {
@@ -52,11 +51,11 @@ public class Message {
         MethodId = methodId;
     }
 
-    public byte[] getArguments() {
+    public String getArguments() {
         return arguments;
     }
 
-    public void setArguments(byte[] arguments) {
+    public void setArguments(String arguments) {
         this.arguments = arguments;
     }
 
@@ -68,6 +67,21 @@ public class Message {
         this.boletin = boletin;
     }
 
+    public JSONObject getJSONMessage(Message msg){
+        JSONObject object_to_return = new JSONObject();
+        try {
+            object_to_return.put("MessageType",msg.getMessageType());
+            object_to_return.put("requestId",msg.getRequestId());
+            object_to_return.put("MethodReference",msg.getMethodReference());
+            object_to_return.put("MethodId",msg.getMethodId());
+            object_to_return.put("arguments",msg.getArguments());
+            object_to_return.put("boletin",msg.getBoletin().getJSONOccurenceBoletin(msg.getBoletin()));
+        }catch (Exception e){
+
+        }
+        return object_to_return;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -75,7 +89,7 @@ public class Message {
                 ", requestId=" + requestId +
                 ", MethodReference='" + MethodReference + '\'' +
                 ", MethodId=" + MethodId +
-                ", arguments=" + Arrays.toString(arguments) +
+                ", arguments=" + arguments +
                 ", boletin=" + boletin +
                 '}';
     }

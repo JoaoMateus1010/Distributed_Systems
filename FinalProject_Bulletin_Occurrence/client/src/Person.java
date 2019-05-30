@@ -1,20 +1,17 @@
-import java.util.ArrayList;
-
+import org.json.*;
 public class Person {
     private String Name;
     private String CPF;
     private String RG;
     private String Date_Of_Birth;
-    private String sex;
-    private ArrayList<OccurrenceBoletin> List_Occurrence_Boletin;
+    private String Sex;
 
-    public Person(String name, String CPF, String RG, String date_Of_Birth, String sex, ArrayList<OccurrenceBoletin> list_Occurrence_Boletin) {
+    public Person(String name, String CPF, String RG, String date_Of_Birth, String sex) {
         Name = name;
         this.CPF = CPF;
         this.RG = RG;
         Date_Of_Birth = date_Of_Birth;
-        this.sex = sex;
-        List_Occurrence_Boletin = list_Occurrence_Boletin;
+        this.Sex = sex;
     }
 
     public String getName() {
@@ -50,19 +47,25 @@ public class Person {
     }
 
     public String getSex() {
-        return sex;
+        return Sex;
     }
 
     public void setSex(String sex) {
-        this.sex = sex;
+        this.Sex = sex;
     }
 
-    public ArrayList<OccurrenceBoletin> getList_Occurrence_Boletin() {
-        return List_Occurrence_Boletin;
-    }
-
-    public void setList_Occurrence_Boletin(ArrayList<OccurrenceBoletin> list_Occurrence_Boletin) {
-        List_Occurrence_Boletin = list_Occurrence_Boletin;
+    public JSONObject getJSONPerson(Person OBJ_Person){
+        JSONObject obj_to_return = new JSONObject();
+        try{
+            obj_to_return.put("Name",OBJ_Person.getName());
+            obj_to_return.put("CPF",OBJ_Person.getCPF());
+            obj_to_return.put("RG",OBJ_Person.getRG());
+            obj_to_return.put("Date_Of_Birth",OBJ_Person.getDate_Of_Birth());
+            obj_to_return.put("Sex",OBJ_Person.getSex());
+        }catch (JSONException e){
+            System.out.println(e);
+        }
+        return obj_to_return;
     }
 
     @Override
@@ -72,8 +75,7 @@ public class Person {
                 ", CPF='" + CPF + '\'' +
                 ", RG='" + RG + '\'' +
                 ", Date_Of_Birth='" + Date_Of_Birth + '\'' +
-                ", sex='" + sex + '\'' +
-                ", List_Occurrence_Boletin=" + List_Occurrence_Boletin +
+                ", sex='" + Sex + '\'' +
                 '}';
     }
 }

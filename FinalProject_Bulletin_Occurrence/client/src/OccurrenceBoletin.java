@@ -1,3 +1,6 @@
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class OccurrenceBoletin {
 
     private Person Person_Victim;
@@ -6,10 +9,10 @@ public class OccurrenceBoletin {
     private String Local;
     private boolean Using_Weapon; //Yes or Not
     private String Weapon;
-    private boolean Name_Responsible_For_Case;
-    private boolean StatusCase;
+    private String Name_Responsible_For_Case;
+    private boolean StatusCase; // false - not solved,true-solved
 
-    public OccurrenceBoletin(Person person_Victim, Person person_accused, String desciption_accused, String local, boolean using_Weapon, String weapon, boolean name_Responsible_For_Case, boolean statusCase) {
+    public OccurrenceBoletin(Person person_Victim, Person person_accused, String desciption_accused, String local, boolean using_Weapon, String weapon, String name_Responsible_For_Case, boolean statusCase) {
         Person_Victim = person_Victim;
         Person_accused = person_accused;
         Desciption_accused = desciption_accused;
@@ -18,9 +21,6 @@ public class OccurrenceBoletin {
         Weapon = weapon;
         Name_Responsible_For_Case = name_Responsible_For_Case;
         StatusCase = statusCase;
-    }
-
-    public OccurrenceBoletin() {
     }
 
     public Person getPerson_Victim() {
@@ -71,11 +71,11 @@ public class OccurrenceBoletin {
         Weapon = weapon;
     }
 
-    public boolean isName_Responsible_For_Case() {
+    public String getName_Responsible_For_Case() {
         return Name_Responsible_For_Case;
     }
 
-    public void setName_Responsible_For_Case(boolean name_Responsible_For_Case) {
+    public void setName_Responsible_For_Case(String name_Responsible_For_Case) {
         Name_Responsible_For_Case = name_Responsible_For_Case;
     }
 
@@ -87,6 +87,22 @@ public class OccurrenceBoletin {
         StatusCase = statusCase;
     }
 
+    public JSONObject getJSONOccurenceBoletin(OccurrenceBoletin occurrenceBoletin){
+        JSONObject obj_to_return = new JSONObject();
+        try{
+            obj_to_return.put("Person_Victim",occurrenceBoletin.getPerson_Victim().getJSONPerson(occurrenceBoletin.getPerson_Victim()));
+            obj_to_return.put("Person_accused",occurrenceBoletin.getPerson_accused().getJSONPerson(occurrenceBoletin.getPerson_accused()));
+            obj_to_return.put("Desciption_accused",occurrenceBoletin.getDesciption_accused());
+            obj_to_return.put("Local",occurrenceBoletin.getLocal());
+            obj_to_return.put("Using_Weapon",occurrenceBoletin.isUsing_Weapon());
+            obj_to_return.put("Weapon",occurrenceBoletin.getWeapon());
+            obj_to_return.put("Name_Responsible_For_Case",occurrenceBoletin.getName_Responsible_For_Case());
+            obj_to_return.put("StatusCase",occurrenceBoletin.isStatusCase());
+        }catch (JSONException e){
+            System.out.println(e);
+        }
+        return obj_to_return;
+    }
     @Override
     public String toString() {
         return "OccurrenceBoletin{" +
