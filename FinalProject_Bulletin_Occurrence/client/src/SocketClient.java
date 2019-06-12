@@ -95,11 +95,11 @@ public class SocketClient {
     public void send(String msg){
         try {
             if(this.getOut()==null){
-                System.out.println("NULO");
+                System.exit(0);
             }
             this.getOut().writeUTF(msg);
         } catch (IOException e) {
-            System.out.println("AQUI");
+            System.exit(0);
             e.printStackTrace();
             closeAll();
             System.exit(0);

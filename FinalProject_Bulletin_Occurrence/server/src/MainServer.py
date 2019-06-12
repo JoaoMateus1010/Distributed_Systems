@@ -2,19 +2,38 @@ import socket
 import json
 # ------------------------> Functions <--------------------------------
 
-
 def StrToJson(msg):
     return json.loads(msg)
 
 def setAll(msg):
     msgjson = StrToJson(msg)
-    person = Person()
+    personVic = PersonVic()
+    personAcc = PersonAcc()
     bo = OccurrenceBoletin()
     msgRequest = Message()
-    person.setPerson(JSON_MSG=msgjson)
+    personVic.setPersonVic(JSON_MSG=msgjson)
+    personAcc.setPersonAcc(JSON_MSG=msgjson)
     bo.setOccurrenceBoletin(JSON_MSG=msgjson)
     msgRequest.setMessage(JSON_MSG=msgjson)
-    return (msgRequest,bo,person)
+    return (msgRequest,bo,personVic,personAcc)
+
+def MountMsg(Msg,BO,PersonVIC,PersonACC):
+    print(BO.StatusCase)
+    Newvic = PersonVic()
+    Newacc = PersonAcc()
+    Newob = OccurrenceBoletin()
+    NewMsg = Message()
+
+    Newob = BO
+    NewMsg = Msg
+    Newvic = PersonVIC
+    Newacc = PersonACC
+
+    Newob.Person_Victim = Newvic
+    Newob.Person_accused = Newacc
+    NewMsg.boletin = Newob
+
+    return NewMsg.ConvertObjectMessageToJSON()
 # ------------------------> Class <------------------------------------
 
 
@@ -38,7 +57,7 @@ class SocketServer:
         conn.send(str(msg).encode("UTF-8"))
 
 
-class Person:
+class PersonVic:
     def __init__(self):
         self.Name = None
         self.CPF = None
@@ -47,13 +66,37 @@ class Person:
         self.Sex = None
         pass
 
-    def setPerson(self,JSON_MSG):
+    def setPersonVic(self,JSON_MSG):
         self.Name = JSON_MSG["boletin"]["Person_Victim"]["Name"]
         self.CPF = JSON_MSG["boletin"]["Person_Victim"]["CPF"]
         self.RG = JSON_MSG["boletin"]["Person_Victim"]["RG"]
         self.Date_Of_Birth = JSON_MSG["boletin"]["Person_Victim"]["Date_Of_Birth"]
         self.Sex = JSON_MSG["boletin"]["Person_Victim"]["Sex"]
         pass
+
+    def ConvertObjectPersonVICToJSON(self):
+        return json.dumps({"Name":self.Name,"CPF":self.CPF,"RG":self.CPF,"Date_Of_Birth":self.Date_Of_Birth,"Sex":self.Sex})
+
+
+class PersonAcc:
+    def __init__(self):
+        self.Name = None
+        self.CPF = None
+        self.RG = None
+        self.Date_Of_Birth = None
+        self.Sex = None
+        pass
+
+    def setPersonAcc(self,JSON_MSG):
+        self.Name = JSON_MSG["boletin"]["Person_accused"]["Name"]
+        self.CPF = JSON_MSG["boletin"]["Person_accused"]["CPF"]
+        self.RG = JSON_MSG["boletin"]["Person_accused"]["RG"]
+        self.Date_Of_Birth = JSON_MSG["boletin"]["Person_accused"]["Date_Of_Birth"]
+        self.Sex = JSON_MSG["boletin"]["Person_accused"]["Sex"]
+        pass
+
+    def ConvertObjectPersonACCToJSON(self):
+        return json.dumps({"Name": self.Name, "CPF":self.CPF, "RG": self.RG, "Date_Of_Birth": self.Date_Of_Birth, "Sex": self.Sex})
 
 
 class OccurrenceBoletin:
@@ -79,6 +122,15 @@ class OccurrenceBoletin:
         self.StatusCase = JSON_MSG["boletin"]["StatusCase"]
         pass
 
+    def ConvertObjectOccurrenceBoletinToJSON(self):
+        pacc = PersonAcc()
+        pvic = PersonVic()
+
+        pacc = self.Person_accused
+        pvic = self.Person_Victim
+
+        return json.dumps({"Person_Victim":pvic.ConvertObjectPersonVICToJSON(),"Person_accused":pacc.ConvertObjectPersonACCToJSON(),"Desciption_accused":self.Desciption_accused,"Local":self.Local,"Using_Weapon":self.Using_Weapon,"Weapon":self.Weapon,"Name_Responsible_For_Case":self.Name_Responsible_For_Case,"StatusCase":self.StatusCase})
+
 
 class Message:
     def __init__(self):
@@ -98,21 +150,27 @@ class Message:
         self.arguments = JSON_MSG["arguments"]
         self.boletin = JSON_MSG["boletin"]
         pass
+
+    def ConvertObjectMessageToJSON(self):
+        bo = OccurrenceBoletin()
+        bo = self.boletin
+        return json.dumps({"MessageType":self.MessageType,"requestId":self.requestId,"MethodReference":self.MethodReference,"MethodId":self.MethodId,"arguments":self.arguments,"boletin":bo.ConvertObjectOccurrenceBoletinToJSON()})
 # ------------------------> Main <--------------------------------
 
 
-sc=SocketServer(serverPort=2006, serverHost="127.0.0.1")
+sc=SocketServer(serverPort=2007, serverHost="127.0.0.1")
 (conn,addr)=sc.socket.accept()
 print("Cliente -> ",addr)
 msg=sc.read(conn=conn)
-(mensagem,bo,pessoa)=setAll(msg)
+(mensagem,bo,pessoaVic,pessoaAcc)=setAll(msg)
 print("-------------------   MENSAGEM   ----------------------")
 print(mensagem.MessageType,mensagem.requestId,mensagem.MethodReference,mensagem.MethodId,mensagem.arguments,mensagem.boletin)
 print("----------------------  BO  --------------------------")
 print(bo.Person_Victim,bo.Person_accused,bo.Desciption_accused,bo.Local,bo.Using_Weapon,bo.Weapon,bo.Name_Responsible_For_Case,bo.StatusCase)
-print("---------------------   Person  ----------------------")
-print(pessoa.Name,pessoa.CPF,pessoa.RG,pessoa.Date_Of_Birth,pessoa.Sex)
-
+print("---------------------   Person Vic ----------------------")
+print(pessoaVic.Name,pessoaVic.CPF,pessoaVic.RG,pessoaVic.Date_Of_Birth,pessoaVic.Sex)
+print("---------------------   Person Acc ----------------------")
+print(pessoaAcc.Name,pessoaAcc.CPF,pessoaAcc.RG,pessoaAcc.Date_Of_Birth,pessoaAcc.Sex)
 bo.StatusCase = True
-sc.send(bo.StatusCase,conn=conn)
+sc.send(str(MountMsg(mensagem,bo,pessoaVic,pessoaAcc)),conn=conn)
 conn.close()

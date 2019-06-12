@@ -1,6 +1,5 @@
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Arrays;
 
 public class Message {
     private int MessageType;
@@ -11,10 +10,10 @@ public class Message {
     private OccurrenceBoletin boletin;
 
     public Message(int messageType, int requestId, String methodReference, int methodId, String arguments, OccurrenceBoletin boletin) {
-        MessageType = messageType;
+        this.MessageType = messageType;
         this.requestId = requestId;
-        MethodReference = methodReference;
-        MethodId = methodId;
+        this.MethodReference = methodReference;
+        this.MethodId = methodId;
         this.arguments = arguments;
         this.boletin = boletin;
     }
@@ -80,6 +79,19 @@ public class Message {
 
         }
         return object_to_return;
+    }
+
+    public Message convertStrJSONToMessage(String JSONSTRMessage){
+        Message msg = null;
+        OccurrenceBoletin occurrenceBoletin = new OccurrenceBoletin(null,null,"","",false,"","",false);
+        try {
+            JSONObject obj = new JSONObject(JSONSTRMessage);
+            occurrenceBoletin=occurrenceBoletin.convertStrJSONToOccurrenceBoletin(obj.get("boletin").toString());
+            msg = new Message(obj.getInt("MessageType"),obj.getInt("requestId"),obj.getString("MethodReference"),obj.getInt("MethodId"),obj.getString("arguments"),occurrenceBoletin);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return msg;
     }
 
     @Override

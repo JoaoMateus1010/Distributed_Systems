@@ -13,14 +13,14 @@ public class OccurrenceBoletin {
     private boolean StatusCase; // false - not solved,true-solved
 
     public OccurrenceBoletin(Person person_Victim, Person person_accused, String desciption_accused, String local, boolean using_Weapon, String weapon, String name_Responsible_For_Case, boolean statusCase) {
-        Person_Victim = person_Victim;
-        Person_accused = person_accused;
-        Desciption_accused = desciption_accused;
-        Local = local;
-        Using_Weapon = using_Weapon;
-        Weapon = weapon;
-        Name_Responsible_For_Case = name_Responsible_For_Case;
-        StatusCase = statusCase;
+        this.Person_Victim = person_Victim;
+        this.Person_accused = person_accused;
+        this.Desciption_accused = desciption_accused;
+        this.Local = local;
+        this.Using_Weapon = using_Weapon;
+        this.Weapon = weapon;
+        this.Name_Responsible_For_Case = name_Responsible_For_Case;
+        this.StatusCase = statusCase;
     }
 
     public Person getPerson_Victim() {
@@ -103,6 +103,22 @@ public class OccurrenceBoletin {
         }
         return obj_to_return;
     }
+
+    public OccurrenceBoletin convertStrJSONToOccurrenceBoletin(String JSONSTROccurrenceBoletin){
+        OccurrenceBoletin boletin = null;
+        Person vic = new Person("","","","","");
+        Person acc = new Person("","","","","");
+        try {
+            JSONObject obj = new JSONObject(JSONSTROccurrenceBoletin);
+            vic = vic.convertStrJSONToPerson(obj.get("Person_Victim").toString());
+            acc = acc.convertStrJSONToPerson(obj.get("Person_accused").toString());
+            boletin = new OccurrenceBoletin(vic,acc,obj.getString("Desciption_accused"),obj.getString("Local"),obj.getBoolean("Using_Weapon"),obj.getString("Weapon"),obj.getString("Name_Responsible_For_Case"),obj.getBoolean("StatusCase"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return boletin;
+    }
+
     @Override
     public String toString() {
         return "OccurrenceBoletin{" +

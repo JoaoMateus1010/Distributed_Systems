@@ -67,7 +67,16 @@ public class Person {
         }
         return obj_to_return;
     }
-
+    public Person convertStrJSONToPerson(String JSONSTRPerson){
+        Person person = null;
+        try {
+            JSONObject obj = new JSONObject(JSONSTRPerson);
+            person = new Person(obj.getString("Name"),obj.getString("CPF"),obj.getString("RG"),obj.getString("Date_Of_Birth"),obj.getString("Sex"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return person;
+    }
     @Override
     public String toString() {
         return "Person{" +
