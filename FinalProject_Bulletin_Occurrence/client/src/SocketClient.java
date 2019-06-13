@@ -99,12 +99,12 @@ public class SocketClient {
             }
             this.getOut().writeUTF(msg);
         } catch (IOException e) {
+            System.out.println("Erro no send");
             System.exit(0);
             e.printStackTrace();
             closeAll();
             System.exit(0);
         }
-        //System.out.println(msg);
     }
 
     public String request(){

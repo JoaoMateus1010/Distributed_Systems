@@ -1,5 +1,14 @@
 import socket
 import json
+import threading
+import sys
+# ------------------------> Global Variables <--------------------------------
+listpersonvic = list()
+listpersonacc = list()
+listbo = list()
+listmsg = list()
+dictRelationBO = dict()
+dictRelationMsg = dict()
 # ------------------------> Functions <--------------------------------
 
 def StrToJson(msg):
@@ -155,22 +164,133 @@ class Message:
         bo = OccurrenceBoletin()
         bo = self.boletin
         return json.dumps({"MessageType":self.MessageType,"requestId":self.requestId,"MethodReference":self.MethodReference,"MethodId":self.MethodId,"arguments":self.arguments,"boletin":bo.ConvertObjectOccurrenceBoletinToJSON()})
-# ------------------------> Main <--------------------------------
+
+# ------------------------> Functions Server <--------------------------------
+
+def addPersonVic(person):
+    aux = True
+    for vic in listpersonvic:
+        if(vic.Name==person.Name):
+            aux=False
+    if(aux):
+        listpersonvic.append(person)
+    pass
 
 
-sc=SocketServer(serverPort=2007, serverHost="127.0.0.1")
-(conn,addr)=sc.socket.accept()
-print("Cliente -> ",addr)
-msg=sc.read(conn=conn)
-(mensagem,bo,pessoaVic,pessoaAcc)=setAll(msg)
-print("-------------------   MENSAGEM   ----------------------")
-print(mensagem.MessageType,mensagem.requestId,mensagem.MethodReference,mensagem.MethodId,mensagem.arguments,mensagem.boletin)
-print("----------------------  BO  --------------------------")
-print(bo.Person_Victim,bo.Person_accused,bo.Desciption_accused,bo.Local,bo.Using_Weapon,bo.Weapon,bo.Name_Responsible_For_Case,bo.StatusCase)
-print("---------------------   Person Vic ----------------------")
-print(pessoaVic.Name,pessoaVic.CPF,pessoaVic.RG,pessoaVic.Date_Of_Birth,pessoaVic.Sex)
-print("---------------------   Person Acc ----------------------")
-print(pessoaAcc.Name,pessoaAcc.CPF,pessoaAcc.RG,pessoaAcc.Date_Of_Birth,pessoaAcc.Sex)
-bo.StatusCase = True
-sc.send(str(MountMsg(mensagem,bo,pessoaVic,pessoaAcc)),conn=conn)
-conn.close()
+def addPersonAcc(person):
+    aux = True
+    for acc in listpersonacc:
+        if (acc.Name == person.Name):
+            aux = False
+    if (aux):
+        listpersonacc.append(person)
+    pass
+
+def addBO(bo):
+    listbo.append(bo)
+    pass
+
+
+def addMsg(msg):
+    listmsg.append(msg)
+    pass
+
+def listPersonVic():
+    print("   >>   " + "Vitimas"+"   <<   ")
+    for vic in listpersonvic:
+        print("    > "+str(vic.Name))
+    pass
+
+
+def listPersonAcc():
+    print("   >>   " + "Acusados" + "   <<   ")
+    for acc in listpersonacc:
+        print("    > "+str(acc.Name))
+    pass
+
+
+def listBO():
+    print("   >>   " + "Vítimas <-> Acusados -> Nome do responsável pelo caso" + "   <<   ")
+    for (key,value) in dictRelationBO.items():
+        print("    >",str(value[0].Name)," <-> ",str(value[1].Name)," -> ",str(key.Name_Responsible_For_Case))
+    pass
+
+
+def listMSG():
+    print("   >>   " + "(Tipo da mensagem, ID da mensagem, Referência do método)" + "   <<   ")
+    for msg in listmsg:
+        print("    >",(msg.MessageType,msg.requestId,msg.MethodReference))
+    pass
+
+
+def listen():
+    sc = SocketServer(serverPort=2008, serverHost="127.0.0.1")
+    print("[SERVER OK]")
+    while(True):
+        (conn, addr) = sc.socket.accept()
+        msg = sc.read(conn=conn)
+        (mensagem, bo, pessoaVic, pessoaAcc) = setAll(msg)
+        addPersonVic(pessoaVic)
+        addPersonAcc(pessoaAcc)
+        addBO(bo)
+        addMsg(mensagem)
+        dictRelationBO[bo]= (pessoaVic,pessoaAcc)
+        dictRelationMsg[mensagem] = bo
+        #sc.send(str(MountMsg(mensagem, bo, pessoaVic, pessoaAcc)), conn=conn)
+        conn.close()
+    pass
+# ------------------------> Switch Functions <--------------------------------
+mapFuncServer = dict({1 : "BuscarBOVitima",2 : "BuscarBOVitima"})
+def selectFunc(Msg):
+    valmsg = Message()
+    valmsg = Msg
+    try:
+        print(mapFuncServer[valmsg.requestId])
+    except KeyError:
+        print("Função não encontrada")
+    pass
+
+# ------------------------> Main <--------------------------------------------
+thr = threading.Thread(target=listen)
+thr.start()
+print("[MENU OK]")
+while(True):
+    print("[1] : Listar Vitimas\n[2] : Listar Acusados\n[3] : Listar Boletins de ocorrências\n[4] : Listar Mensagens\n[5] : Atribuir caso ao Responsável\n[6] : Concluir caso")
+    op = input("Digite: ")
+    if(op=="1"):
+        listPersonVic()
+    if (op == "2"):
+        listPersonAcc()
+    if(op=="3"):
+        listBO()
+    if(op=="4"):
+        listMSG()
+    if(op=="5"):
+        listMSG()
+        selectMsgID = int(input("Selecione o ID da mensagem desejado : "))
+        selectMsg = Message()
+        for mg in listmsg:
+            if(mg.requestId == selectMsgID):
+                selectMsg = mg
+        if(selectMsg.MethodReference != None):
+            NameResp = input("Digite o nome do responsável do caso: ")
+            dictRelationMsg[selectMsg].Name_Responsible_For_Case = NameResp
+            print("> Alteração realizada com sucesso")
+        else:
+            print(" ! Mensagem não encontrada com o ID digitado ! ")
+    if(op=="6"):
+        listMSG()
+        selectMsgID = int(input("Selecione o ID da mensagem desejado : "))
+        selectMsg = Message()
+        for mg in listmsg:
+            if (mg.requestId == selectMsgID):
+                selectMsg = mg
+        if (selectMsg.MethodReference != None):
+            Resp = input("Deseja concluir o caso? [s/n]: ")
+            newStatusCase = False
+            if(Resp == "s"):
+                newStatusCase = True
+            dictRelationMsg[selectMsg].StatusCase = newStatusCase
+            print("> Alteração realizada com sucesso")
+        else:
+            print(" ! Mensagem não encontrada com o ID digitado ! ")

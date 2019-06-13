@@ -9,7 +9,7 @@ public class OccurrenceBoletin {
     private String Local;
     private boolean Using_Weapon; //Yes or Not
     private String Weapon;
-    private String Name_Responsible_For_Case;
+    private String Name_Responsible_For_Case; // serverside
     private boolean StatusCase; // false - not solved,true-solved
 
     public OccurrenceBoletin(Person person_Victim, Person person_accused, String desciption_accused, String local, boolean using_Weapon, String weapon, String name_Responsible_For_Case, boolean statusCase) {

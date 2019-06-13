@@ -2,7 +2,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Message {
-    private int MessageType;
+    private int MessageType; // 0-request | 1-reply
     private int requestId;
     private String MethodReference;
     private int MethodId;
