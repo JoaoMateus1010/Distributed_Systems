@@ -1,8 +1,8 @@
 import java.util.Scanner;
-import java.io.*;
+import java.io.IOException;
 public class MainClient {
     public static int countIDMsg = 0;
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException,InterruptedException{
         int op = -1;
         Scanner sc = new Scanner(System.in);
         Scanner scMenu = new Scanner(System.in);
@@ -11,7 +11,11 @@ public class MainClient {
         while (true){
             System.out.println("[1] : Fazer cadastro da vítima\n[2] : Fazer cadastro do acusado\n[3] : Adicionar um Boletim de ocorrência\n[4] : Listar Vítimas\n[5] : Listar Acusados\n[6] : Listar Boletins de ocorrências\n[7] : Buscar Boletins de ocorrência por Vítima\n[8] : Buscar boletins de ocorrências por Acusado\n[9] : Listar funções do servidor\n[10] : Sair");
             System.out.print("Digite: ");
-            op = sc.nextInt();
+            try{
+                op = sc.nextInt();
+            }catch (Exception e){
+                op = 10;
+            }
             switch (op){
                 case 1: // Cadastro de Vítima [Local]
                     String NomeV = "";
@@ -112,7 +116,7 @@ public class MainClient {
                     }
                     OccurrenceBoletin bo = new OccurrenceBoletin(vitima,acusado,descricao_acusado,local,UsingW,Arma,"-",false);
                     functions.ListBO.add(bo);
-                    Message msgTosend = new Message(0,countIDMsg,"addBO",3,"-",bo);
+                    Message msgTosend = new Message(0,countIDMsg,"ADDBO",1,"-",bo);
                     functions.doOperation(msgTosend);
                     System.out.println("-> Completo <-");
                     countIDMsg++;
@@ -127,14 +131,57 @@ public class MainClient {
                     functions.ListBO();
                     break;
                 case 7: //Buscar Boletins de ocorrência por Vítima [Local -> Remoto -> Local]
+                    System.out.println("-> Buscar Boletim de ocorrência por vítima <-");
+                    Person vitima8 = null;
+                    String NameVic8 = null;
+                    System.out.println("Selecione a vítima");
+                    functions.ListVitimas();
+                    System.out.print("Nome: ");
+                    NameVic8 = scMenu.nextLine();
 
+                    if(functions.getPersonVicFromName(NameVic8)==null){
+                        System.out.println("! Vítima não cadastrada !");
+                        break;
+                    }else{
+                        vitima8 = functions.getPersonVicFromName(NameVic8);
+                    }
+                    OccurrenceBoletin bo8 = functions.getBOFromPersonVIC(vitima8);
+                    Message msgTosend8 = new Message(0,countIDMsg,"BuscarBOVitima",2,"-",bo8);
+                    Message reply = null;
+                    reply = functions.doOperation(msgTosend8);
+                    if(reply!=null){
+                        System.out.println("-> Completo <-");
+                    }else{
+                        System.out.println("-> Erro, tente novamente, servidor respondeu a mensagem errada ou não houve resposta. Tente mais tarde! <-");
+                    }
+                    countIDMsg++;
                     break;
                 case 8: // Buscar boletins de ocorrências por Acusado [Local -> Remoto -> Local]
+                    System.out.println("-> Buscar Boletim de ocorrência por Acusado <-");
+                    Person acusado8 = null;
+                    String NameAcc8 = null;
+                    System.out.println("-> Cadastro de Boletim de ocorrência <-");
+                    System.out.println("Selecione o Acusado");
+                    functions.ListAcusados();
+                    System.out.print("Nome: ");
+                    NameAcc8 = scMenu.nextLine();
 
+                    if(functions.getPersonAccFromName(NameAcc8)==null){
+                        System.out.println("! Acusado não cadastrado !");
+                        break;
+                    }else{
+                        acusado8 = functions.getPersonAccFromName(NameAcc8);
+                    }
+                    OccurrenceBoletin bo82 = functions.getBOFromPersonACC(acusado8);
+                    Message msgTosend82 = new Message(0,countIDMsg,"BuscarBOAcusado",3,"-",bo82);
+                    functions.doOperation(msgTosend82);
+                    System.out.println("-> Completo <-");
+                    countIDMsg++;
                     break;
                 case 9: // Listar funções do servidor [Local]
-                    System.out.println("    > 1 : BuscarBOVitima");
-                    System.out.println("    > 2 : BuscarBOAcusado");
+                    System.out.println("    > 1 : ADDBO");
+                    System.out.println("    > 2 : BuscarBOVitima");
+                    System.out.println("    > 3 : BuscarBOAcusado");
                     break;
                 case 10: //Sair [Local]
                     System.exit(0);
@@ -142,13 +189,8 @@ public class MainClient {
                 default:
                     System.out.println("-> Opção inválida <-");
                     break;
+
             }
         }
-        /*Person vitima   =     new Person("VT","000.000.000-00","00000000-0","00/00/0000","F");
-        Person acc      =     new Person("AC","111.111.111-11","11111111-1","11/11/1111","M");
-        OccurrenceBoletin boletin01 = new OccurrenceBoletin(vitima,acc,"homem alto loiro de olhos azuis com mancha no rosto e tatuagem de tartaruga nas costas","Rua Francisco Bocalho",true,"AK-47","Sargento Sarmento",false);
-        Message msg01 = new Message(0,0,"OpenBO",0,"Sem argumentos",boletin01);
-        socketClient.send(msg01.getJSONMessage(msg01).toString());
-        msg01 = msg01.convertStrJSONToMessage(socketClient.request());*/
     }
 }

@@ -1,7 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -17,6 +16,9 @@ public class SocketClient {
     private int ClientPort;
 
     public SocketClient(String IP,int PortServer,int PortClient) {
+        this.IP=IP;
+        this.ServerPort=PortServer;
+        this.ClientPort=PortClient;
         try {
             InetAddress inetC = InetAddress.getByName(IP);
             Socket scC = new Socket(inetC,PortServer,inetC,PortClient);
@@ -26,11 +28,9 @@ public class SocketClient {
             this.in = inC;
             this.out = outC;
             this.Inet=inetC;
-            this.IP=IP;
-            this.ServerPort=PortServer;
-            this.ClientPort=PortClient;
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            System.out.println("Server não encontrado");
+            System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
         }

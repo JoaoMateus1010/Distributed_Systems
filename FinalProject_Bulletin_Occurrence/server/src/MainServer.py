@@ -1,14 +1,19 @@
+import fileinput
 import socket
 import json
 import threading
-import sys
+import time
 # ------------------------> Global Variables <--------------------------------
+from distutils import file_util
+
 listpersonvic = list()
 listpersonacc = list()
 listbo = list()
 listmsg = list()
 dictRelationBO = dict()
 dictRelationMsg = dict()
+dictRelationBOFile = dict()
+mapFuncServer = dict({1: "ADDBO", 2: "BuscarBOVitima", 3: "BuscarBOAcusado"})
 # ------------------------> Functions <--------------------------------
 
 def StrToJson(msg):
@@ -27,7 +32,6 @@ def setAll(msg):
     return (msgRequest,bo,personVic,personAcc)
 
 def MountMsg(Msg,BO,PersonVIC,PersonACC):
-    print(BO.StatusCase)
     Newvic = PersonVic()
     Newacc = PersonAcc()
     Newob = OccurrenceBoletin()
@@ -210,9 +214,9 @@ def listPersonAcc():
 
 
 def listBO():
-    print("   >>   " + "Vítimas <-> Acusados -> Nome do responsável pelo caso" + "   <<   ")
+    print("   >>   " + "Vítimas <-> Acusados -> Nome do responsável pelo caso ---> Status do caso" + "   <<   ")
     for (key,value) in dictRelationBO.items():
-        print("    >",str(value[0].Name)," <-> ",str(value[1].Name)," -> ",str(key.Name_Responsible_For_Case))
+        print("    >",str(value[0].Name)," <-> ",str(value[1].Name)," -> ",str(key.Name_Responsible_For_Case)," ---> ",str(key.StatusCase),"  <<  ")
     pass
 
 
@@ -222,38 +226,142 @@ def listMSG():
         print("    >",(msg.MessageType,msg.requestId,msg.MethodReference))
     pass
 
+# ------------------------> Remote <--------------------------------
+def ADDBO(mensagem, bo, pessoaVic, pessoaAcc,conn,sc):
+    newpv = PersonVic()
+    newpc = PersonAcc()
+    newbo = OccurrenceBoletin()
+    newmsg = Message()
 
-def listen():
-    sc = SocketServer(serverPort=2008, serverHost="127.0.0.1")
-    print("[SERVER OK]")
-    while(True):
-        (conn, addr) = sc.socket.accept()
-        msg = sc.read(conn=conn)
-        (mensagem, bo, pessoaVic, pessoaAcc) = setAll(msg)
-        addPersonVic(pessoaVic)
-        addPersonAcc(pessoaAcc)
-        addBO(bo)
-        addMsg(mensagem)
-        dictRelationBO[bo]= (pessoaVic,pessoaAcc)
-        dictRelationMsg[mensagem] = bo
-        #sc.send(str(MountMsg(mensagem, bo, pessoaVic, pessoaAcc)), conn=conn)
-        conn.close()
+    newpv = pessoaVic
+    newpc = pessoaAcc
+    newbo= bo
+    newmsg = mensagem
+
+    newmsg.MessageType = 1
+
+    addPersonVic(newpv)
+    addPersonAcc(newpc)
+    addBO(newbo)
+    addMsg(newmsg)
+    dictRelationBO[newbo]= (newpv,newpc)
+    dictRelationMsg[newmsg] = newbo
+
+    sc.send(str(MountMsg(newmsg, newbo, newpv, newpc)), conn=conn)
+    pass
+
+
+def BuscarBOVitima(mensagem, bo, pessoaVic, pessoaAcc,conn,sc):
+    namefile=str(pessoaVic.Name)
+    path = str("client/src/FILE_PERSON_VICTIM/")+str(namefile)
+    file = open(path,"w")
+    st = str()
+    for (key,value) in dictRelationBO.items():
+        if(value[0].Name==pessoaVic.Name):
+            st += "----> BO: "+str(key)+" <----\n"
+            st += "VICTIM : ("+str("Nome: "+str(value[0].Name)+",CPF: "+str(value[0].CPF)+",RG: "+str(value[0].RG)+",Sexo: "+str(value[0].Sex))+")\n"
+            st += "ACCUSED : ("+str("Nome: "+str(value[1].Name)+",CPF: "+str(value[1].CPF)+",RG: "+str(value[1].RG)+",Sexo: "+str(value[1].Sex))+")\n"
+            st += "DESCRIPTION_ACCUSED : "+str(key.Desciption_accused)+"\n"
+            st += "LOCAL : "+str(key.Local)+"\n"
+            st += "USING_WEAPON : "+str(key.Using_Weapon)+"\n"
+            st += "WEAPON : "+str(key.Weapon)+"\n"
+            st += "NAME RESPONSIBLE FOR CASE : "+str(key.Name_Responsible_For_Case)+"\n"
+            st += "STATUS CASE : "+str(key.StatusCase)+"\n"
+
+    file.write(st)
+    newpv = PersonVic()
+    newpc = PersonAcc()
+    newbo = OccurrenceBoletin()
+    newmsg = Message()
+
+    newpv = pessoaVic
+    newpc = pessoaAcc
+    newbo = bo
+    newmsg = mensagem
+
+    newmsg.MessageType = 1
+    sc.send(str(MountMsg(newmsg, newbo, newpv, newpc)), conn=conn)
+    file.close()
+    pass
+
+
+def BuscarBOAcusado(mensagem, bo, pessoaVic, pessoaAcc,conn,sc):
+    namefile = str(pessoaAcc.Name)
+    path = str("client/src/FILE_PERSON_ACCUSED/") + str(namefile)
+    file = open(path, "w")
+    st = str()
+    for (key, value) in dictRelationBO.items():
+        if (value[1].Name == pessoaAcc.Name):
+            st += "----> BO: " + str(key) + " <----\n"
+            st += "VICTIM : (" + str("Nome: " + str(value[0].Name) + ",CPF: " + str(value[0].CPF) + ",RG: " + str(
+                value[0].RG) + ",Sexo: " + str(value[0].Sex)) + ")\n"
+            st += "ACCUSED : (" + str("Nome: " + str(value[1].Name) + ",CPF: " + str(value[1].CPF) + ",RG: " + str(
+                value[1].RG) + ",Sexo: " + str(value[1].Sex)) + ")\n"
+            st += "DESCRIPTION_ACCUSED : " + str(key.Desciption_accused) + "\n"
+            st += "LOCAL : " + str(key.Local) + "\n"
+            st += "USING_WEAPON : " + str(key.Using_Weapon) + "\n"
+            st += "WEAPON : " + str(key.Weapon) + "\n"
+            st += "NAME RESPONSIBLE FOR CASE : " + str(key.Name_Responsible_For_Case) + "\n"
+            st += "STATUS CASE : " + str(key.StatusCase) + "\n"
+
+    file.write(st)
+    newpv = PersonVic()
+    newpc = PersonAcc()
+    newbo = OccurrenceBoletin()
+    newmsg = Message()
+
+    newpv = pessoaVic
+    newpc = pessoaAcc
+    newbo = bo
+    newmsg = mensagem
+
+    newmsg.MessageType = 1
+    sc.send(str(MountMsg(newmsg, newbo, newpv, newpc)), conn=conn)
+    file.close()
     pass
 # ------------------------> Switch Functions <--------------------------------
-mapFuncServer = dict({1 : "BuscarBOVitima",2 : "BuscarBOVitima"})
-def selectFunc(Msg):
+
+
+def selectFunc(mensagem, bo, pessoaVic, pessoaAcc,conn,sc):
     valmsg = Message()
-    valmsg = Msg
+    valmsg = mensagem
     try:
-        print(mapFuncServer[valmsg.requestId])
+        if(valmsg.MethodId == 1):
+            ADDBO(mensagem, bo, pessoaVic, pessoaAcc,conn,sc)
+            pass
+        if(valmsg.MethodId == 2):
+            BuscarBOVitima(mensagem, bo, pessoaVic, pessoaAcc,conn,sc)
+            pass
+        if(valmsg.MethodId == 3):
+            BuscarBOAcusado(mensagem, bo, pessoaVic, pessoaAcc,conn,sc)
+            pass
+
     except KeyError:
         print("Função não encontrada")
     pass
 
+
+def listen():
+    sc = SocketServer(serverPort=2009, serverHost="127.0.0.1")
+    print("[SERVER OK]")
+    while (True):
+        (conn, addr) = sc.socket.accept()
+        print("\n-------- Cliente Connected ------")
+        print("Client: ", addr)
+        msg = sc.read(conn=conn)
+        (mensagem, bo, pessoaVic, pessoaAcc) = setAll(msg)
+        print("Op Request: ",mensagem.MethodReference)
+        selectFunc(mensagem, bo, pessoaVic, pessoaAcc,conn,sc)
+        print("-------- End ------\nDigite: ")
+        conn.close()
+    pass
 # ------------------------> Main <--------------------------------------------
+
+
 thr = threading.Thread(target=listen)
 thr.start()
 print("[MENU OK]")
+time.sleep(1)
 while(True):
     print("[1] : Listar Vitimas\n[2] : Listar Acusados\n[3] : Listar Boletins de ocorrências\n[4] : Listar Mensagens\n[5] : Atribuir caso ao Responsável\n[6] : Concluir caso")
     op = input("Digite: ")
